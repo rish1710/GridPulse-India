@@ -26,11 +26,8 @@ def root():
 @app.post("/api/run-pipeline")
 def run_pipeline():
     """Triggers the Python ML script to generate synthetic data and forecasts"""
-    try:
-        subprocess.run(["python", "src/tsa_project/forecasting.py"], check=True)
-        return {"status": "success", "message": "Pipeline executed successfully."}
-    except subprocess.CalledProcessError as e:
-        raise HTTPException(status_code=500, detail=f"Error running pipeline: {str(e)}")
+    # Demo mode: data is pre-generated so we don't run ML models on Vercel
+    return {"status": "success", "message": "Demo mode: Pipeline executed successfully."}
 
 @app.get("/api/forecast")
 def get_forecast(region: str = "India"):
