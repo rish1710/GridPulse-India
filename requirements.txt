@@ -8,3 +8,5 @@ sktime
 statsmodels
 python-pptx
 jupyterlab
+streamlit
+plotly
