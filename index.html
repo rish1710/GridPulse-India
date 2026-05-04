@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GridPulse // Cyber-Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+        
+        body {
+            font-family: 'Space Mono', monospace;
+            background-color: #050505;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .stroke-text {
+            -webkit-text-stroke: 1px #3b82f6;
+            color: transparent;
+        }
+
+        .neon-text {
+            text-shadow: 0 0 10px rgba(59, 130, 246, 0.8), 0 0 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .neon-border {
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        #preloader {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            padding: 2rem;
+        }
+        
+        .cyber-grid {
+            position: fixed;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px);
+            background-size: 30px 30px;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.3;
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        @keyframes scan {
+            0% { transform: translateY(-100px); }
+            100% { transform: translateY(800px); }
+        }
+        .animate-scan {
+            animation: scan 4s linear infinite;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- PRELOADER -->
+    <div id="preloader">
+        <div id="terminal-text" class="flex-1 overflow-y-auto no-scrollbar space-y-2 text-blue-500 font-bold text-sm md:text-xl uppercase tracking-widest">
+            <!-- GSAP will type here -->
+        </div>
+        <div class="absolute bottom-8 right-8 text-right opacity-30">
+            <h1 class="text-4xl md:text-6xl font-black uppercase tracking-tighter text-blue-500">GRID_PULSE</h1>
+            <p class="text-xs">SYSTEM v2.0</p>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="cyber-grid"></div>
+
+    <div id="main-content" class="relative z-10 opacity-0 transition-opacity duration-1000 min-h-screen flex flex-col">
+        
+        <header class="w-full p-6 flex justify-between items-start text-xs md:text-sm border-b border-blue-900/50 bg-black/50 backdrop-blur-md">
+            <div>
+                <p class="text-blue-500 font-bold">PROTOCOL // OMNI-GRID</p>
+                <p class="text-gray-500">STATUS: SECURE</p>
+            </div>
+            <div class="text-right">
+                <p class="text-yellow-500 animate-pulse font-bold">LIVESTREAM</p>
+            </div>
+        </header>
+
+        <section class="py-12 flex flex-col items-center justify-center relative overflow-hidden text-center">
+            <h2 class="text-blue-500 tracking-[0.5em] text-sm uppercase mb-4 neon-text">Energy Override Initiated</h2>
+            <h1 class="text-5xl md:text-8xl font-black uppercase tracking-tighter">
+                GRID <br /> <span class="stroke-text">PULSE</span>
+            </h1>
+        </section>
+
+        <section class="flex-1 px-4 md:px-8 pb-16 flex flex-col items-center max-w-6xl mx-auto w-full">
+            
+            <div class="w-full mb-6 flex flex-col md:flex-row justify-between items-center bg-blue-900/10 p-4 rounded-lg neon-border backdrop-blur-sm">
+                <div class="mb-4 md:mb-0">
+                    <h3 class="text-xl font-bold text-blue-400">NEURAL FORECAST ENGINE</h3>
+                    <p class="text-xs text-gray-400 tracking-widest uppercase">Predictive Load Balancing</p>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <label class="text-sm font-bold text-blue-500 tracking-widest uppercase">Target_Region:</label>
+                    <select id="regionSelect" class="bg-black text-blue-400 p-2 rounded border border-blue-500/50 font-bold focus:outline-none focus:border-blue-500 cursor-pointer hover:bg-blue-900/30 transition-colors uppercase" onchange="fetchData()">
+                        <option value="India">INDIA_NEXUS</option>
+                        <option value="Maharashtra">MAHARASHTRA_SECTOR</option>
+                        <option value="Mumbai">MUMBAI_NODE</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="chart-container" class="w-full h-[60vh] bg-black/80 rounded-lg neon-border p-2 relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-b from-transparent via-blue-500/10 to-transparent h-[20px] w-full z-20 pointer-events-none animate-scan"></div>
+                <div id="chart" class="w-full h-full"></div>
+            </div>
+            
+        </section>
+        
+        <footer class="p-6 text-center border-t border-blue-900/50 bg-black/50 text-xs text-gray-600 tracking-widest uppercase">
+            TRANSMISSION SECURE // OMNI-GRID AI
+        </footer>
+    </div>
+
+    <script>
+        const bootSequence = [
+            "INITIALIZING NEURAL NET...",
+            "LOADING PROTOCOL: ELECTRIC_GRID",
+            "MEMORY CHECK: 128PB OK",
+            "SECURITY: BYPASSED",
+            "LOCATING TARGET REGIONS...",
+            "SENSORS LOCKED",
+            "MODE: HIGH_VOLTAGE",
+            "ACCESS GRANTED // ENTER"
+        ];
+
+        const terminal = document.getElementById('terminal-text');
+        const preloader = document.getElementById('preloader');
+        const mainContent = document.getElementById('main-content');
+        let delay = 0;
+
+        bootSequence.forEach((line, index) => {
+            delay += Math.random() * 300 + 100;
+            setTimeout(() => {
+                const p = document.createElement('div');
+                p.innerHTML = `<span class="text-blue-900 mr-4">>0${index+1}</span> <span class="text-blue-400 drop-shadow-md">${line}</span>`;
+                terminal.appendChild(p);
+                terminal.scrollTop = terminal.scrollHeight;
+            }, delay);
+        });
+
+        setTimeout(() => {
+            gsap.to(preloader, {
+                yPercent: -100,
+                duration: 0.8,
+                ease: "power4.inOut",
+                onComplete: () => {
+                    preloader.style.display = 'none';
+                    mainContent.style.opacity = '1';
+                    
+                    gsap.from("header", {y: -50, opacity: 0, duration: 1, ease: "power3.out"});
+                    gsap.from("h1", {scale: 0.9, opacity: 0, filter: "blur(5px)", duration: 1.2, ease: "back.out(1.5)", delay: 0.2});
+                    gsap.from("#chart-container", {y: 30, opacity: 0, duration: 1, ease: "power3.out", delay: 0.5});
+                }
+            });
+        }, delay + 800);
+
+        async function fetchData() {
+            const region = document.getElementById('regionSelect').value;
+            
+            if(document.getElementById('chart').data) {
+                 Plotly.relayout('chart', { 'xaxis.title': 'FETCHING DATA...', 'yaxis.title': '...' });
+            }
+
+            try {
+                const response = await fetch(`/api/forecast?region=${region}`);
+                const data = await response.json();
+                
+                const hist_x = data.historical.map(d => d.timestamp);
+                const hist_y = data.historical.map(d => d.demand_mw);
+                
+                const fore_x = data.forecast.map(d => d.timestamp);
+                const fore_y = data.forecast.map(d => d.forecast_demand_mw);
+
+                const trace1 = {
+                    x: hist_x, y: hist_y, mode: 'lines', name: 'HISTORICAL_LOAD',
+                    line: {color: '#3b82f6', width: 3},
+                    fill: 'tozeroy',
+                    fillcolor: 'rgba(59, 130, 246, 0.1)'
+                };
+                
+                const trace2 = {
+                    x: fore_x, y: fore_y, mode: 'lines', name: 'PREDICTED_SURGE',
+                    line: {color: '#eab308', width: 3, dash: 'dot'},
+                };
+
+                const layout = {
+                    title: { text: `[ ${region.toUpperCase()} ENERGY MATRIX ]`, font: { family: 'Space Mono', color: '#60a5fa', size: 16 } },
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    plot_bgcolor: 'rgba(0,0,0,0)',
+                    font: {color: '#9ca3af', family: 'Space Mono'},
+                    xaxis: {gridcolor: 'rgba(59, 130, 246, 0.1)', zerolinecolor: 'rgba(59, 130, 246, 0.3)', tickfont: {size: 10}},
+                    yaxis: {title: 'DEMAND (MW)', gridcolor: 'rgba(59, 130, 246, 0.1)', zerolinecolor: 'rgba(59, 130, 246, 0.3)', tickfont: {size: 10}},
+                    margin: { t: 50, r: 20, l: 60, b: 40 },
+                    hovermode: 'x unified',
+                    legend: { orientation: 'h', y: -0.15, x: 0.5, xanchor: 'center' }
+                };
+
+                const config = { responsive: true, displayModeBar: false };
+                Plotly.newPlot('chart', [trace1, trace2], layout, config);
+            } catch (err) {
+                console.error("Neural link failed:", err);
+            }
+        }
+        
+        fetchData();
+    </script>
+</body>
+</html>
