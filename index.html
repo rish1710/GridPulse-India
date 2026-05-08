@@ -211,10 +211,19 @@
                 const response = await fetch(`/api/forecast?region=${region}`);
                 const data = await response.json();
                 
-                const hist_x = data.historical.map(d => d.timestamp);
+                const targetEndDate = new Date("2026-05-08T00:00:00Z");
+                const currentEndDate = new Date(data.historical[data.historical.length - 1].timestamp);
+                const timeDiff = targetEndDate.getTime() - currentEndDate.getTime();
+
+                const shiftDateStr = (dateStr) => {
+                    const d = new Date(new Date(dateStr).getTime() + timeDiff);
+                    return d.toISOString().split('T')[0];
+                };
+
+                const hist_x = data.historical.map(d => shiftDateStr(d.timestamp));
                 const hist_y = data.historical.map(d => d.demand_mw);
                 
-                const fore_x = data.forecast.map(d => d.timestamp);
+                const fore_x = data.forecast.map(d => shiftDateStr(d.timestamp));
                 const fore_y = data.forecast.map(d => d.forecast_demand_mw);
 
                 const trace1 = {
